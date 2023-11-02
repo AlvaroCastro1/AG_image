@@ -1,0 +1,4 @@
+colour==0.1.5
+colour-science==0.4.3
+numpy==1.24.2
+Pillow==9.5.0
