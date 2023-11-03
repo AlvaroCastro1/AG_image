@@ -87,6 +87,10 @@ class AGApp(QMainWindow):
             imagen = self.image_path
             poblacion_inicial = self.population_spinbox.value()
             num_generaciones = self.generations_spinbox.value()
+            
+            gen = Generacion(imagen)
+            gen.crear_poblacion(poblacion_inicial)
+            gen.main(num_generaciones)
 
 
 def main():
