@@ -96,19 +96,19 @@ class Generacion:
             self.mutar()
 
 # Obtener datos desde la terminal
-argumentos_terminal = sys.argv
+# argumentos_terminal = sys.argv
 
-if len(argumentos_terminal) == 4:
-    gen = Generacion(argumentos_terminal[1])
-    gen.crear_poblacion(int(argumentos_terminal[2]))
-    gen.main(int(argumentos_terminal[3]))
-elif len(argumentos_terminal) == 5:
-    gen = Generacion(argumentos_terminal[1])
-    gen.crear_poblacion(int(argumentos_terminal[2]), argumentos_terminal[4])
-    gen.main(int(argumentos_terminal[3]))
-else:
-    print("Por favor usa: python AG.py [imagen] [numero de soluciones inicial] [numero de Generaciones]")
-    print("\Ejemplo: python AG.py imagen1.png 100 500\n")
-    print("En caso de querer cargar una generación anterior:")
-    print("Usa: python AG.py [imagen]  [numero de soluciones inicial] [numero de Generaciones] [img previa]")
-    print("\tEJEMPLO: python AG.py image.png 100 500 load.png")
+# if len(argumentos_terminal) == 4:
+#     gen = Generacion(argumentos_terminal[1])
+#     gen.crear_poblacion(int(argumentos_terminal[2]))
+#     gen.main(int(argumentos_terminal[3]))
+# elif len(argumentos_terminal) == 5:
+#     gen = Generacion(argumentos_terminal[1])
+#     gen.crear_poblacion(int(argumentos_terminal[2]), argumentos_terminal[4])
+#     gen.main(int(argumentos_terminal[3]))
+# else:
+#     print("Por favor usa: python AG.py [imagen] [numero de soluciones inicial] [numero de Generaciones]")
+#     print("\Ejemplo: python AG.py imagen1.png 100 500\n")
+#     print("En caso de querer cargar una generación anterior:")
+#     print("Usa: python AG.py [imagen]  [numero de soluciones inicial] [numero de Generaciones] [img previa]")
+#     print("\tEJEMPLO: python AG.py image.png 100 500 load.png")
