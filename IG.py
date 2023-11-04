@@ -1,31 +1,18 @@
-import os
 import sys
-from concurrent.futures import ThreadPoolExecutor
-
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QLabel, QSpinBox
+import os
+from PyQt6.QtWidgets import QApplication, QMainWindow,QFileDialog, QPushButton, QLabel, QSpinBox
+from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt
-from PIL import Image
-import random
 import numpy as np
-import sys
-import os
+from PIL import Image
 from solucion import Solucion
+import random
 
-class AGApp(QMainWindow):
-
+class GUIApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.initUI()
 
-    def Generacion(self, imagen_original):
-            self.imagen_original = Image.open(imagen_original)
-            self.tamanio = self.imagen_original.size
-            self.imgArray = np.array(self.imagen_original)
-            self.num_soluciones = 0
-            self.poblacion = []
-            self.contador = 1
-            self.ultima_aptitud = 0
+        self.initUI()
 
     def initUI(self):
         self.setWindowTitle('Algoritmo Genético')
@@ -66,6 +53,9 @@ class AGApp(QMainWindow):
         self.start_button.clicked.connect(self.start_algorithm)
         self.start_button.setGeometry(480, 400, 200, 40)
 
+        self.informacion = QLabel("", self)
+        self.informacion.setGeometry(450, 305, 300, 40)
+
     def load_image(self):
         fileFilter = 'Image File (*.jpg);'
         response = QFileDialog.getOpenFileName(
@@ -89,20 +79,39 @@ class AGApp(QMainWindow):
         if not self.image_path:
             print("Imagen no seleccionada")
         else:
-            self.imagen_original = self.image_path
+            imagen_original = self.image_path
             poblacion_inicial = self.population_spinbox.value()
             num_generaciones = self.generations_spinbox.value()
 
-            self.imagen_original = Image.open(self.image_path)
-            self.tamanio = self.imagen_original.size
-            self.imgArray = np.array(self.imagen_original)
-            self.num_soluciones = 0
-            self.poblacion = []
-            self.contador = 1
-            self.ultima_aptitud = 0
-            
-            self.crear_poblacion(poblacion_inicial)
-            self.main(num_generaciones)
+            self.worker_thread = Trabajo_AG(self, imagen_original, poblacion_inicial, num_generaciones, self.imagen_final, self.informacion)
+            self.worker_thread.finished.connect(self.worker_finished)
+            self.worker_thread.start()
+
+    def worker_finished(self):
+        self.start_button.setEnabled(True)
+
+class Trabajo_AG(QThread):
+    def __init__(self, parent,imagen_original, poblacion_inicial, num_generaciones, cuadro_viewer, informacion):
+        super().__init__()
+        self.parent = parent
+        self.imagen_original = Image.open(imagen_original)
+        self.tamanio = self.imagen_original.size
+        self.imgArray = np.array(self.imagen_original)
+        self.num_soluciones = 0
+        self.poblacion = []
+        self.contador = 1
+        self.ultima_aptitud = 0
+        self.poblacion_inicial=poblacion_inicial
+        self.num_generaciones=num_generaciones
+        self.cuadro_viewer = cuadro_viewer
+        self.informacion= informacion
+
+
+
+    def run(self):
+        self.crear_poblacion(self.poblacion_inicial)
+        self.main(self.num_generaciones)
+        self.finished.emit()
 
     def crear_poblacion(self, num_soluciones, imagen_previa=None):
         self.num_soluciones = num_soluciones
@@ -152,18 +161,32 @@ class AGApp(QMainWindow):
             os.makedirs("AG_trabajo")
         if not os.path.exists("AG_trabajo/generaciones"):
             os.makedirs("AG_trabajo/generaciones")
-
+        ruta = ""
         if (x + 1 == num_generaciones):
             ruta = os.path.join("AG_trabajo", "respuesta_final.png")
             padre.getImagen().save(ruta)
-            exit(0)
+            # exit(0)
         elif (x % 1 == 0):
             ruta = os.path.join("AG_trabajo", "generaciones", f"generacion{str(x)}.png")
             padre.getImagen().save(ruta)
 
 
+        imagen_inicial = QPixmap(ruta)
+        self.cuadro_viewer.setPixmap(imagen_inicial.scaled(
+            self.cuadro_viewer.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        ))
+        self.cuadro_viewer.setScaledContents(True)
+        # print(ruta)
+
     def equilibrar(self, aptitud):
-        print("Aptitud: ", aptitud, end="\t")
+        cad = f"Aptitud: {aptitud}\t"
+        print(cad)
+        
+        texto_actual = self.informacion.text()
+        nuevo_contenido = texto_actual + cad
+        self.informacion.setText(nuevo_contenido)
+        
+        
         if self.ultima_aptitud == aptitud:
             self.contador += 1
         else:
@@ -171,12 +194,14 @@ class AGApp(QMainWindow):
             self.contador -= 1
             if self.contador < 1:
                 self.contador = 1
-        print("Contador:", self.contador)
+        # print("Contador:", self.contador)
 
     def main(self, num_generaciones):
         print("Iniciando Generación")
         for x in range(num_generaciones):
-            print(f"Generación: {x + 1}/{num_generaciones}", end="\t")
+            cad = f"Generación: {x + 1}/{num_generaciones}\t"
+            print(cad)
+            self.informacion.setText(cad)
             poblacion_ordenada = self.calcular_aptitud()
             self.equilibrar(poblacion_ordenada[0].getAptitud())
             self.guardar(poblacion_ordenada[0], x, num_generaciones)
@@ -186,7 +211,7 @@ class AGApp(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    window = AGApp()
+    window = GUIApp()
     window.show()
     sys.exit(app.exec())
 
