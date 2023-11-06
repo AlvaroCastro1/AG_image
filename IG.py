@@ -39,7 +39,7 @@ class GUIApp(QMainWindow):
         self.population_spinbox = QSpinBox(self)
         self.population_spinbox.setGeometry(260, 400, 100, 40)
         self.population_spinbox.setValue(10)
-        self.population_spinbox.setRange(1, 100)  # mínimo y máximo
+        self.population_spinbox.setRange(1, 1000)  # mínimo y máximo
 
         self.generations_label = QLabel('# de Generaciones:', self)
         self.generations_label.setGeometry(370, 370, 200, 40)
@@ -47,7 +47,7 @@ class GUIApp(QMainWindow):
         self.generations_spinbox = QSpinBox(self)
         self.generations_spinbox.setGeometry(370, 400, 100, 40)
         self.generations_spinbox.setValue(10)
-        self.generations_spinbox.setRange(1, 100)
+        self.generations_spinbox.setRange(1, 1000)
 
         self.start_button = QPushButton('Iniciar Algoritmo', self)
         self.start_button.clicked.connect(self.start_algorithm)
