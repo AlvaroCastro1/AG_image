@@ -56,6 +56,10 @@ class GUIApp(QMainWindow):
         self.informacion = QLabel("", self)
         self.informacion.setGeometry(450, 305, 300, 40)
 
+        self.start_button_2 = QPushButton('Recuperar', self)
+        self.start_button_2.clicked.connect(self.start_algorithm_2)
+        self.start_button_2.setGeometry(690, 400, 80, 40)
+
     def load_image(self):
         fileFilter = 'Image File (*.jpg);'
         response = QFileDialog.getOpenFileName(
@@ -75,6 +79,37 @@ class GUIApp(QMainWindow):
             ))
             self.imagen_inicial.setScaledContents(True)
 
+    def start_algorithm_2(self):
+        fileFilter = 'Image File (*.jpg);'
+        response = QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Selecciona la imagen a continuar",
+            directory=os.getcwd(),
+            filter=fileFilter,
+            initialFilter=fileFilter
+        )
+
+        if response:
+            self.image_path_continuacion = response[0]
+            print("Ruta de la imagen CONTINUACION seleccionada:", self.image_path_continuacion)
+            self.imagen_CONTINUACION = QPixmap(self.image_path_continuacion)
+            self.imagen_final.setPixmap(self.imagen_CONTINUACION.scaled(
+                self.imagen_final.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            ))
+            self.imagen_final.setScaledContents(True)
+
+        if not self.image_path and self.image_path_continuacion:
+            print("Imagen no seleccionada")
+        else:
+            imagen_original = self.image_path
+            poblacion_inicial = self.population_spinbox.value()
+            num_generaciones = self.generations_spinbox.value()
+            self.imagen_previa = self.image_path_continuacion
+
+            self.worker_thread = Trabajo_AG(self, imagen_original, poblacion_inicial, num_generaciones, self.imagen_final, self.informacion, self.imagen_previa)
+            self.worker_thread.finished.connect(self.worker_finished)
+            self.worker_thread.start()
+
     def start_algorithm(self):
         if not self.image_path:
             print("Imagen no seleccionada")
@@ -83,7 +118,7 @@ class GUIApp(QMainWindow):
             poblacion_inicial = self.population_spinbox.value()
             num_generaciones = self.generations_spinbox.value()
 
-            self.worker_thread = Trabajo_AG(self, imagen_original, poblacion_inicial, num_generaciones, self.imagen_final, self.informacion)
+            self.worker_thread = Trabajo_AG(self, imagen_original, poblacion_inicial, num_generaciones, self.imagen_final, self.informacion, None)
             self.worker_thread.finished.connect(self.worker_finished)
             self.worker_thread.start()
 
@@ -91,7 +126,7 @@ class GUIApp(QMainWindow):
         self.start_button.setEnabled(True)
 
 class Trabajo_AG(QThread):
-    def __init__(self, parent,imagen_original, poblacion_inicial, num_generaciones, cuadro_viewer, informacion):
+    def __init__(self, parent,imagen_original, poblacion_inicial, num_generaciones, cuadro_viewer, informacion, imagen_previa):
         super().__init__()
         self.parent = parent
         self.imagen_original = Image.open(imagen_original)
@@ -105,11 +140,15 @@ class Trabajo_AG(QThread):
         self.num_generaciones=num_generaciones
         self.cuadro_viewer = cuadro_viewer
         self.informacion= informacion
-
+        self.imagen_previa=imagen_previa
+        
+        print(f"orig {self.imagen_original}")
+        print(f"prev {self.imagen_original}")
 
 
     def run(self):
-        self.crear_poblacion(self.poblacion_inicial)
+        print(f"previa {self.imagen_previa}")
+        self.crear_poblacion(self.poblacion_inicial, self.imagen_previa)
         self.main(self.num_generaciones)
         self.finished.emit()
 
@@ -163,11 +202,11 @@ class Trabajo_AG(QThread):
             os.makedirs("AG_trabajo/generaciones")
         ruta = ""
         if (x + 1 == num_generaciones):
-            ruta = os.path.join("AG_trabajo", "respuesta_final.png")
+            ruta = os.path.join("AG_trabajo", "respuesta_final.jpg")
             padre.getImagen().save(ruta)
             # exit(0)
         elif (x % 1 == 0):
-            ruta = os.path.join("AG_trabajo", "generaciones", f"generacion{str(x)}.png")
+            ruta = os.path.join("AG_trabajo", "generaciones", f"generacion{str(x)}.jpg")
             padre.getImagen().save(ruta)
 
 

@@ -48,3 +48,4 @@ class Solucion():
             # delta_E de colour calcula la diferencia de color entre las dos imagenes
             self.aptitud = np.mean(colour.delta_E(self.imgArray, targetImage, method='CIE1976'))
         return self.aptitud
+# entre mas cercano a 0 mas mejor
