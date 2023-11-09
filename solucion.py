@@ -2,7 +2,7 @@ import random
 from PIL import Image, ImageDraw
 import numpy as np
 import colour
-
+#color random
 def getColorRandom(): 
     # generar color aleatorio RGB
     return (random.randint(0,255), random.randint(0, 255), random.randint(0, 255) )
@@ -12,12 +12,12 @@ class Solucion():
     def __init__(self, tamanio:tuple[int, int], tipo:str, imagen:Image=None) -> None:
         self.tamanio = tamanio
         self.tipo = tipo
-        self.imagen = imagen if imagen is not None else Image.new('RGB', tamanio, getColorRandom())
+        self.imagen = imagen if imagen is not None else Image.new('RGB', tamanio, getColorRandom()) #valida si la imagen es nula
         #self.imagen = imagen if imagen != None else Image.new(type, tamanio, getColorRandom())
         # Imagen para dibujar
-        self.draw = ImageDraw.Draw(self.imagen)
-        self.imgArray = [] if imagen == None else np.array(self.imagen)
-        self.aptitud = -1
+        self.draw = ImageDraw.Draw(self.imagen) #lienzo para pintar 
+        self.imgArray = [] if imagen == None else np.array(self.imagen) #matriz imagen
+        self.aptitud = -1 #se inicializa
 
     def getImagen(self):
         return self.imagen
@@ -48,4 +48,6 @@ class Solucion():
             # delta_E de colour calcula la diferencia de color entre las dos imagenes
             self.aptitud = np.mean(colour.delta_E(self.imgArray, targetImage, method='CIE1976'))
         return self.aptitud
+    def __str__(self):
+        return f"Solucion con aptitud: ({self.aptitud})"
 # entre mas cercano a 0 mas mejor
